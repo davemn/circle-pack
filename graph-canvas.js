@@ -98,6 +98,56 @@
     $(this.canvas).dequeue(animationName);
   };
   
+  exports.instance.prototype.drawCircle = function(x, y, radius){
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, radius, 0,2*Math.PI);
+    this.ctx.stroke();
+    this.ctx.fill();
+  };
+  
+  exports.instance.prototype._randomPacking = function(){
+    // v2
+    //  (β)
+    //      (γ) v3
+    //  (α)
+    // v1
+    
+    var r1 = Math.random() * 30;
+    var r2 = Math.random() * 30;
+    var r3 = Math.random() * 30;
+    
+    console.log('r1 = ' + r1);
+    console.log('r2 = ' + r2);
+    console.log('r3 = ' + r3);
+    
+    var a = r2+r3;
+    var b = r1+r3;
+    var c = r1+r2;
+    
+    var α = Math.acos((b*b + c*c - a*a)/(2*b*c));
+    var β = Math.acos((a*a + c*c - b*b)/(2*a*c));
+    var γ = Math.PI - α - β;
+    
+    console.log('α = ' + (α/Math.PI)*180);
+    console.log('β = ' + (β/Math.PI)*180);
+    console.log('γ = ' + (γ/Math.PI)*180);
+    console.log('α + β + γ = ' + (α+β+γ));
+    
+    var x3 = (r1+r2) * Math.sin(α) * Math.sin(β) / Math.sin(α+β);
+    var y3 = Math.sqrt(b*b - x3*x3);
+    
+    this.ctx.translate(50,50);
+      
+    // place the first vertex at the origin
+    this.drawCircle(0,0, r1);
+    
+    // place the second vertex at (0, c)
+    this.drawCircle(0,c, r2);
+    
+    // place the third vertex at (x3, y3)
+    this.drawCircle(x3,y3, r3);
+  };
+  
   exports.instance.prototype.drawGraph = function(){
     this.ctx.save();
     this.ctx.lineWidth = 1;
@@ -131,6 +181,43 @@
       this.ctx.stroke();
       this.ctx.fill();
     }
+    
+    this._randomPacking();
+        
+    //       .
+    //      / \
+    //     z   z
+    //    /     \
+    //   x       y
+    //  /         \
+    // . - x - y - .
+    
+    // θ = x y + ^2 x z + ^2 + y z + ^2 - 2 x y + * x z + * / arccos
+    // Derive:
+    // c ^2 == a ^2 b ^2 + 2 a * b * γ cos * -
+    // αβγ
+    // 
+    // c^2 = a^2 + b^2 - 2ab*(cos γ)
+    // 
+    // randomly assign a radius to each vertex
+    // // for each vertex:
+    // //   check the length of the legs, if they match that of the existing triangle, exit loop
+    // //   set the radius to the average radius of its neighbors
+    
+    // Compute sizes of circles required for tangency, if placed at vertices
+    
+    // problem := determine an angle θ, knowing only the radii of the circles at the vertices
+    // inverse problem := determine the radii of the circles at the vertices, knowing only the angles θ
+    
+    // x1 = tri[0]
+    // y1 = tri[1]
+    // 
+    // x2 = tri[2]
+    // y2 = tri[3]
+    // 
+    // x3 = tri[4]
+    // y3 = tri[5]
+    
     
     this.ctx.restore();
   };
