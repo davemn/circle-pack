@@ -11,6 +11,7 @@ const earcut = require('earcut'); // https://github.com/mapbox/earcut
 
 function Mesh(){
   this._vertices = [];
+  this._vertexCount = 0;
   this._edges = [];
   this._faces = [];
 }
@@ -18,36 +19,73 @@ function Mesh(){
 Mesh.prototype.addVertex = function(x,y){
   this._vertices.push(x);
   this._vertices.push(y);
+  this._vertexCount++;
 };
+
+// http://stackoverflow.com/a/919661
+// https://en.wikipedia.org/wiki/Pairing_function#Cantor_pairing_function
+function computeId(a, b){
+  if(a > b){
+    var temp = a;
+    a = b;
+    b = temp;
+  }
+  return .5*(a+b)*(a+b+1)+b;
+}
 
 Mesh.prototype.triangulate = function(){
   this._faces = earcut(this._vertices);
   
   var edgeDict = {};
   var edgeId;
-  // TODO fix incorrect link between adjacent faces (e.g. [4 8 3 7 6 1], the code below creates an edge between 3 & 7)
-  // TODO fix missing link between first & last verts in triangle
-  for(var i=0; i < this._faces.length; i++){
-    if(i === this._faces.length-1)
-      break;
-    
-    edgeId = this._faces[i] ^ this._faces[i+1]; // XOR
-    if(!edgeDict[edgeId])
-      edgeDict[edgeId] = [this._faces[i], this._faces[i+1]];
-    else {
-      edgeDict[edgeId].push(this._faces[i]);
-      edgeDict[edgeId].push(this._faces[i+1]);
+  
+  for(var i=0; i < this._faces.length; i+=3){
+    for(var vI=0; vI < 3; vI++){
+      // [0,1],[1,2],[2,0]
+      edgeId = computeId(this._faces[i+vI], this._faces[(i+vI+1)%3]);
+      
+      if(!(edgeId in edgeDict)){
+        edgeDict[edgeId] = [this._faces[i+vI], this._faces[(i+vI+1)%3]];
+        // sort in ascending numeric order
+        // if(edgeDict[edgeId][0] > edgeDict[edgeId][1]){
+        //   var temp = edgeDict[edgeId][0];
+        //   edgeDict[edgeId][0] = edgeDict[edgeId][1];
+        //   edgeDict[edgeId][1] = temp;
+        // }
+      }
     }
   }
-  // remove duplicate indexes (http://stackoverflow.com/a/28762098)
-  for(edgeId in edgeDict){
-    edgeDict[edgeId] = edgeDict[edgeId].filter(function(elem, pos) {
-      return edgeDict[edgeId].indexOf(elem) == pos;
-    }); 
-    edgeDict[edgeId].sort();
+  
+  // TODO flatten edgeDict into array of adjacencies
+  // edgeDict = {
+  //   25:  [1, 3],
+  //   16:  [2, 9],
+  //   81:  [0, 1],
+  //   19:  [2, 3],
+  //   ...
+  // }
+  // =>
+  // [
+  //   [0, 1],
+  //   [1, 3, 0, 1],
+  //   [2, 9, 2, 3],
+  //   [1, 3, 2, 3],
+  //   ...
+  // ]
+  // =>
+  // [
+  //   [1],
+  //   [3, 0],
+  //   [9, 3],
+  //   [1, 2],
+  //   ...
+  // ]
+  for(var vertI=0; vertI < this._vertexCount; vertI++){
+    for(edgeId in edgeDict){
+      // edgeDict[edgeId]
+    }
   }
   
-  // TODO flatten edgeDict into array of pairs
   // this._edges = ...;
 };
 
