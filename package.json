@@ -1,0 +1,14 @@
+{
+  "name": "circle-packing",
+  "version": "0.0.1",
+  "description": "Circle Packing with Javascript & Canvas",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "David Mann",
+  "license": "MIT",
+  "devDependencies": {
+    "browserify": "~13.1.0"
+  }
+}
