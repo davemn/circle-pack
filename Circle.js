@@ -1,0 +1,38 @@
+// Vector2.Lerp = function(a, b, t){
+//   t = Math.max(t, 0);
+//   t = Math.min(t, 1);
+//   
+//   var heading = Vector2.Subtract(b, a);
+//   heading = Vector2.Scale(heading, t);
+//   
+//   return Vector2.Add(a, heading);
+// };
+
+// // Movement speed in units/sec.
+// var speed = 1.0;
+// 
+// // Time when the movement started.
+// private var startTime: float;
+// 
+// // Total distance between the markers.
+// private var journeyLength: float;  
+// 
+// function Start() {
+//   // Keep a note of the time the movement started.
+//   startTime = Time.time;
+//   
+//   // Calculate the journey length.
+//   journeyLength = Vector3.Distance(startMarker.position, endMarker.position);
+// }
+// 
+// // Follows the target position like with a spring
+// function Update () {
+//   // Distance moved = time * speed.
+//   var distCovered = (Time.time - startTime) * speed;
+//   
+//   // Fraction of journey completed = current distance divided by total distance.
+//   var fracJourney = distCovered / journeyLength;
+//   
+//   // Set our position as a fraction of the distance between the markers.
+//   transform.position = Vector3.Lerp(startMarker.position, endMarker.position, fracJourney);
+// }
