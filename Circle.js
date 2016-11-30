@@ -36,3 +36,30 @@
 //   // Set our position as a fraction of the distance between the markers.
 //   transform.position = Vector3.Lerp(startMarker.position, endMarker.position, fracJourney);
 // }
+
+const Time = require('./Time');
+
+function Circle(x,y,radius){
+  this.x = x;
+  this.y = y;
+  this.r = radius;
+  
+  // Make sure `this` is always correct in methods that are used as callbacks
+  this.draw = this.draw.bind(this);
+}
+
+Circle.prototype.draw = function(ctx){
+  ctx.save();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'red';
+  ctx.fillStyle = 'white';
+  
+  ctx.beginPath();
+  ctx.arc(this.x, this.y, this.r, 0,2*Math.PI);
+  ctx.stroke();
+  ctx.fill();
+  
+  ctx.restore();
+};
+
+module.exports = Circle;

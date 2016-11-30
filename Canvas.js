@@ -3,12 +3,11 @@ function Canvas(opts){
   
   this.relMousePos = {x:0, y:0};
   
-  this.swatchSize = 20;
-  this.swatchPadding = 8;
-  
   // - Size & setup drawing environment ---
   this.canvas = $canvas.get(0);
   this.ctx = this.canvas.getContext('2d');
+  this._q = []; // queue of drawables (objects with a draw() method)
+  this._isLoop = false;
   
   // ---
   
@@ -23,9 +22,9 @@ function Canvas(opts){
   }
   
   $canvas.mousemove({outerThis:this, canvas:this.canvas, ctx:this.ctx}, this._updateMousePos);
-      
-  // - Draw dynamic elements ---
-  // requestAnimationFrame(updateCanvas);
+  
+  // Make sure `this` is always correct in methods that are used as callbacks
+  this.draw = this.draw.bind(this);
 };
   
 // Ala http://stackoverflow.com/a/17130415
@@ -41,6 +40,30 @@ Canvas.prototype._updateMousePos = function(evt){
   // mouse position relative to the top-left of the canvas
   outerThis.relMousePos.x = evt.clientX - rect.left;
   outerThis.relMousePos.y = evt.clientY - rect.top;
+};
+
+Canvas.prototype.add = function(drawable){
+  this._q.push(drawable);
+};
+
+Canvas.prototype.draw = function(){
+  this.ctx.save();
+  this.ctx.lineWidth = 1;
+  
+  this.ctx.fillStyle = 'white';
+  this.ctx.fillRect(0,0, this.canvas.width,this.canvas.height);
+  
+  for(var i=0; i < this._q.length; i++){
+    this._q[i].draw(this.ctx, this.canvas);
+  }
+  
+  if(this._isLoop)
+    requestAnimationFrame(this.draw);
+};
+
+Canvas.prototype.loop = function(){
+  this._isLoop = true;
+  requestAnimationFrame(this.draw);
 };
 
 Canvas.prototype.drawCircle = function(x, y, radius){
