@@ -8,6 +8,7 @@ m.triangulate();
 */
 
 const earcut = require('earcut'); // https://github.com/mapbox/earcut
+const _ = require('lodash');
 
 function Mesh(){
   this._vertices = [];
@@ -80,13 +81,22 @@ Mesh.prototype.triangulate = function(){
   //   [1, 2],
   //   ...
   // ]
-  for(var vertI=0; vertI < this._vertexCount; vertI++){
-    for(edgeId in edgeDict){
-      // edgeDict[edgeId]
-    }
-  }
   
-  // this._edges = ...;
+  var edgeList = _.reduce(edgeDict, function(result, edge){
+    var greatestVertIdx = Math.max(edge[0], edge[1]);
+    if(greatestVertIdx >= result.length){
+      // fill result up to (and including) the highest vertex in this edge, with empty arrays (one per vertex)
+      _.concat(result, _.fill(Array(greatestVertIdx + 1 - result.length), []));
+    }
+    
+    result[edge[0]].push(edge[0], edge[1]);
+    result[edge[1]].push(edge[0], edge[1]);
+    return result;
+  }, []);
+  
+  this._edges = _.map(edgeList, function(edges,i){
+    return _.filter(edges, function(v){ return v !== i });
+  });
 };
 
 Mesh.prototype.avgDistToNeighbors = function(){
