@@ -37,6 +37,7 @@
 //   transform.position = Vector3.Lerp(startMarker.position, endMarker.position, fracJourney);
 // }
 
+const window = require('global/window');
 const Time = require('./Time');
 
 function Circle(x,y,radius){
@@ -46,6 +47,26 @@ function Circle(x,y,radius){
   
   // Make sure `this` is always correct in methods that are used as callbacks
   this.draw = this.draw.bind(this);
+  
+  const shape = new window.mojs.Shape({
+    parent: '.canvas-container',
+    shape:        'circle',  // shape "circle" is default
+    radius:       { 0: 25 },        // shape radius
+    fill:         'white',   // same as 'transparent'
+    stroke:       '#F64040', // or 'cyan'
+    // strokeWidth:  5,         // width of the stroke
+    // isShowStart:  true,      // show before any animation starts
+    
+    // scale:         { 0 : 1 },
+    duration:      1000,
+    // easing:        'cubic.out',
+    // repeat:        999,
+    // isYoyo: true
+  }).then({
+    stroke: 'rgb(246,64,64)',
+    // scale: { to: 2, easing: 'sin.in' }
+    radius: 75
+  }).play();
 }
 
 Circle.prototype.draw = function(ctx){
