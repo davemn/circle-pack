@@ -8,6 +8,7 @@ function Canvas(opts){
   this.ctx = this.canvas.getContext('2d');
   this._q = []; // queue of drawables (objects with a draw() method)
   this._isLoop = false;
+  this._beforeDraw = []; // append-only queue of functions to be called at the start of draw()
   
   // ---
   
@@ -47,13 +48,17 @@ Canvas.prototype.add = function(drawable){
 };
 
 Canvas.prototype.draw = function(){
+  for(var i=0; i < this._beforeDraw.length; i++){
+    this._beforeDraw[i]();
+  }
+  
   this.ctx.save();
   this.ctx.lineWidth = 1;
   
   this.ctx.fillStyle = 'white';
   this.ctx.fillRect(0,0, this.canvas.width,this.canvas.height);
   
-  for(var i=0; i < this._q.length; i++){
+  for(i=0; i < this._q.length; i++){
     this._q[i].draw(this.ctx, this.canvas);
   }
   
@@ -64,6 +69,14 @@ Canvas.prototype.draw = function(){
 Canvas.prototype.loop = function(){
   this._isLoop = true;
   requestAnimationFrame(this.draw);
+};
+
+Canvas.prototype.noLoop = function(){
+  this._isLoop = false;
+};
+
+Canvas.prototype.beforeLoop = function(factoryFn){
+  this._beforeDraw.push(factoryFn());
 };
 
 Canvas.prototype.drawCircle = function(x, y, radius){
