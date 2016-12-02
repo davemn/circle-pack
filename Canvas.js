@@ -76,7 +76,7 @@ Canvas.prototype.noLoop = function(){
 };
 
 Canvas.prototype.beforeLoop = function(factoryFn){
-  this._beforeDraw.push(factoryFn());
+  // this._beforeDraw.push(factoryFn());
 };
 
 Canvas.prototype.drawCircle = function(x, y, radius){

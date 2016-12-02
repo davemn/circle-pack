@@ -2,9 +2,10 @@ const window = require('global/window');
 const document = require('global/document');
 const $ = window.$;
 
-const Canvas = require('./Canvas');
 const Time = require('./Time');
+const Canvas = require('./Canvas');
 const Circle = require('./Circle');
+const Mesh = require('./Mesh');
 
 // ---
 
@@ -78,8 +79,33 @@ $(document).ready(function(evt) {
   });
   
   // TODO define mesh, circles
-  var packing = new Packing(mesh, circles);
-  canvas.add(packing);
+// <<<
+  // var packing = new Packing(mesh, circles);
+  // canvas.add(packing);
+// ---
+  var mesh = new Mesh();
+
+  // mesh.addVertex(0,0,true);
+  // mesh.addVertex(50,0,true);
+  // mesh.addVertex(0,50,true);
+  // mesh.addVertex(50,50,true);
+  mesh.addVertex(10,0,true);
+  mesh.addVertex(0,50,true);
+  mesh.addVertex(60,60,true);
+  mesh.addVertex(70,10,true);
+  mesh.triangulate();
+  
+  console.log(mesh.vertexCount() + ' Vertices');
+  console.log(mesh._vertices);
+  console.log('Faces');
+  console.log(mesh._faces);
+  console.log('Edges');
+  console.log(mesh._edges);
+  
+  // Mesh.prototype.addVertex = function(x,y, noTriangulate){
+  // Mesh.prototype.triangulate = function(){
+  canvas.add(mesh);
+// >>>
   
   canvas.loop();
 });

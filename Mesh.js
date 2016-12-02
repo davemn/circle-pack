@@ -39,11 +39,13 @@ Mesh.prototype.triangulate = function(){
   this._faces = earcut(this._vertices);
   
   this._edges = Array(this._vertexCount).fill([]);
+  // debugger;
   var a, b;
   for(var i=0; i < this._faces.length; i+=3){
     for(var vI=0; vI < 3; vI++){
       a = this._faces[i+vI];
-      b = this._faces[(i+vI+1)%3];
+      b = this._faces[i+((vI+1)%3)];
+      console.log('  '+a+' ('+(typeof a)+') <-> '+b+ ' ('+(typeof b)+')');
       this._edges[a].push(b);
       this._edges[b].push(a);
     }
@@ -78,6 +80,49 @@ Mesh.prototype.avgDistToNeighbors = function(vertexI){
   }, 0);
   
   return sum / adjacent.length;
+};
+
+// http://stackoverflow.com/a/919661
+// https://en.wikipedia.org/wiki/Pairing_function#Cantor_pairing_function
+function computeId(a, b){
+  if(a > b){
+    var temp = a;
+    a = b;
+    b = temp;
+  }
+  return .5*(a+b)*(a+b+1)+b;
+}
+
+Mesh.prototype.draw = function(ctx){
+  ctx.save();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'orange';
+  
+  var edgeDict = {}; // keep track of the edges we've already drawn
+  var edgeId;
+  var from, to; // just vertex indices, not actual coordinates!
+
+  for(var i=0; i < this._vertexCount; i++){
+    for(var adjI=0; adjI < this._edges[i].length; adjI++){
+      // [0,1],[1,2],[2,0]
+      // edgeId = computeId(this._faces[i+adjI], this._faces[(i+adjI+1)%3]);
+      from = i;
+      to = this._edges[i][adjI];
+      edgeId = computeId(from, to);
+      
+      if(edgeId in edgeDict)
+        continue;
+      
+      edgeDict[edgeId] = true;
+      
+      ctx.beginPath();
+      ctx.moveTo(this._vertices[from*2], this._vertices[from*2+1]);
+      ctx.lineTo(this._vertices[to*2], this._vertices[to*2+1]);
+      ctx.stroke();
+    }
+  }
+  
+  ctx.restore();
 };
 
 module.exports = Mesh;
