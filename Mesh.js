@@ -55,6 +55,11 @@ Mesh.prototype.triangulate = function(){
     }
   }
   // TODO remove dupes in adjacency lists
+  this._edges = this._edges.map(function(edges){
+    return edges.filter(function(vert, i, self){
+      return i === self.indexOf(vert);
+    });
+  });
   
   this._needsTriangulation = false;
 };
