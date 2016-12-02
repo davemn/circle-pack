@@ -9,24 +9,6 @@ const Mesh = require('./Mesh');
 
 // ---
 
-var Smooth = {
-  Constant: function(val){
-    return function(time){ return val; }
-  },
-  Linear: function(duration, from, to){
-    var startTime = Time.time;
-    
-    return function(time){
-      if(time - startTime > duration){
-        return to;
-      }
-      
-      var progress = (time - startTime) / duration;
-      return (1-progress)*from + progress*to;
-    };
-  }
-};
-
 $(document).ready(function(evt) {
   var canvas = new Canvas({
     $canvas: $('#canvas-input'),
@@ -55,7 +37,7 @@ $(document).ready(function(evt) {
             // packing.solve(1); // alt., (100, .001)
             
             packing.forEachVertex(function(prev, vert){
-              vert.circle.getRadius = Smooth.Linear(animDuration, prev.weight, vert.weight);
+              vert.circle.setPropTarget('r', vert.weight, animDuration);
               // call in Circle::draw(), as getRadius(Time.time);
             });
             
@@ -106,6 +88,11 @@ $(document).ready(function(evt) {
   // Mesh.prototype.triangulate = function(){
   canvas.add(mesh);
 // >>>
+
+  // function Circle(x,y,radius){
+  var c = new Circle(200,200, 80);
+  c.setPropTarget('r', 120, 2);
+  canvas.add(c);
   
   canvas.loop();
 });

@@ -39,6 +39,7 @@
 
 const window = require('global/window');
 const Time = require('./Time');
+const Smooth = require('./Smooth');
 
 function Circle(x,y,radius){
   this.x = x;
@@ -47,27 +48,22 @@ function Circle(x,y,radius){
   
   // Make sure `this` is always correct in methods that are used as callbacks
   this.draw = this.draw.bind(this);
-  
-  const shape = new window.mojs.Shape({
-    parent: '.canvas-container',
-    shape:        'circle',  // shape "circle" is default
-    radius:       { 0: 25 },        // shape radius
-    fill:         'white',   // same as 'transparent'
-    stroke:       '#F64040', // or 'cyan'
-    // strokeWidth:  5,         // width of the stroke
-    // isShowStart:  true,      // show before any animation starts
-    
-    // scale:         { 0 : 1 },
-    duration:      1000,
-    // easing:        'cubic.out',
-    // repeat:        999,
-    // isYoyo: true
-  }).then({
-    stroke: 'rgb(246,64,64)',
-    // scale: { to: 2, easing: 'sin.in' }
-    radius: 75
-  }).play();
 }
+
+Circle.prototype.setPropTarget = function(propName, targetVal, duration){
+  if(!(propName in this))
+    return;
+  
+  var interpFn = Smooth.Linear(duration, this[propName], targetVal);
+  
+  Object.defineProperty(this, propName, {
+    enumerable: true,
+    get: function(){ return interpFn(Time.time); },
+    set: function(val){
+      interpFn = Smooth.Constant(val);
+    }
+  });
+};
 
 Circle.prototype.draw = function(ctx){
   ctx.save();
