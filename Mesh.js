@@ -38,7 +38,10 @@ Mesh.prototype.triangulate = function(){
   
   this._faces = earcut(this._vertices);
   
-  this._edges = Array(this._vertexCount).fill([]);
+  // Can't just use `Array(n).fill([])` or `Array(n).map(e => [])`, see:
+  // http://stackoverflow.com/a/20333755
+  this._edges = Array.apply(null, {length: this._vertexCount}).map(function() { return []; });
+  
   // debugger;
   var a, b;
   for(var i=0; i < this._faces.length; i+=3){
@@ -48,8 +51,10 @@ Mesh.prototype.triangulate = function(){
       console.log('  '+a+' ('+(typeof a)+') <-> '+b+ ' ('+(typeof b)+')');
       this._edges[a].push(b);
       this._edges[b].push(a);
+      // debugger;
     }
   }
+  // TODO remove dupes in adjacency lists
   
   this._needsTriangulation = false;
 };
