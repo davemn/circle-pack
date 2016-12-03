@@ -4,7 +4,7 @@ const $ = window.$;
 
 const Time = require('./Time');
 const Canvas = require('./Canvas');
-const Circle = require('./Circle');
+const Packing = require('./Packing');
 const Mesh = require('./Mesh');
 
 // ---
@@ -32,14 +32,9 @@ $(document).ready(function(evt) {
     return function(){
       switch(state){
         case States.REFINE:
-          if(packing.error > errorThreshold){
-            packing = packing.refine();
+          if(packing.getError() > errorThreshold){
+            packing = packing.refineOver(animDuration);
             // packing.solve(1); // alt., (100, .001)
-            
-            packing.forEachVertex(function(prev, vert){
-              vert.circle.setPropTarget('r', vert.weight, animDuration);
-              // call in Circle::draw(), as getRadius(Time.time);
-            });
             
             animStart = -1;
             state = States.ANIMATE;
@@ -60,11 +55,6 @@ $(document).ready(function(evt) {
     };
   });
   
-  // TODO define mesh, circles
-// <<<
-  // var packing = new Packing(mesh, circles);
-  // canvas.add(packing);
-// ---
   var mesh = new Mesh();
 
   // mesh.addVertex(0,0,true);
@@ -84,15 +74,10 @@ $(document).ready(function(evt) {
   console.log('Edges');
   console.log(mesh._edges);
   
-  // Mesh.prototype.addVertex = function(x,y, noTriangulate){
-  // Mesh.prototype.triangulate = function(){
-  canvas.add(mesh);
-// >>>
+  canvas.add(mesh);  
 
-  // function Circle(x,y,radius){
-  var c = new Circle(200,200, 80);
-  c.setPropTarget('r', 120, 2);
-  canvas.add(c);
+  var packing = new Packing(mesh);
+  canvas.add(packing.getCircles());
   
   canvas.loop();
 });

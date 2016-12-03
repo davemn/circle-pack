@@ -135,4 +135,19 @@ Mesh.prototype.draw = function(ctx){
   ctx.restore();
 };
 
+Mesh.prototype.getVertexAt = function(i){
+  return {
+    x: this._vertices[i*2],
+    y: this._vertices[i*2+1],
+    neighbors: this._edges[i].slice() // defensive copy
+  };
+};
+
+Mesh.prototype.forEachVertex = function(ctx, cb){
+  var vert;
+  for(var i=0; i < this._vertexCount; i++){
+    cb.call(ctx, this.getVertexAt(i), i);
+  }
+};
+
 module.exports = Mesh;

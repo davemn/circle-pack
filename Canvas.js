@@ -44,7 +44,13 @@ Canvas.prototype._updateMousePos = function(evt){
 };
 
 Canvas.prototype.add = function(drawable){
-  this._q.push(drawable);
+  if(Array.isArray(drawable)){
+    for(var i=0; i < drawable.length; i++){
+      this._q.push(drawable[i]);
+    }
+  }
+  else
+    this._q.push(drawable);
 };
 
 Canvas.prototype.draw = function(){
