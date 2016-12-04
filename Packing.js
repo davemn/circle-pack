@@ -52,18 +52,37 @@ Packing.prototype.getCircles = function(){
 };
 
 Packing.prototype.refineOver = function(animDuration){
+  // find a radius that minimizes the error for the current vertex
+  // find a radius, newRadius := avg(distToNeighbor) - avg(radiusOfNeighbor)
+  var targetRadii = Array(this.mesh.vertexCount()).fill(0);
+  
   this.mesh.forEachVertex(this, function(vert, i){
-    var cur = this.circles[i];
-    var n;
+  // <<<
+  //  var cur = this.circles[i];
+  //  var n;
+  //  var nR = [];
+  //  
+  //  for(var neighborI=0; neighborI < vert.neighbors.length; neighborI++){
+  //    n = this.circles[vert.neighbors[neighborI]];
+  //    // ...
+  //    // radiusDist = cur.r + n.r;
+  //    // err.push(meshDist - radiusDist);
+  //    nR.push(n.r);
+  //  }
+  // ---
+    var avgR = vert.neighbors.reduce(function(accR, neighborI){
+      accR += this.circles[neighborI].r;
+    }.bind(this),0);
+    avgR = avgR / vert.neighbors.length;
     
-    for(var neighborI=0; neighborI < vert.neighbors.length; neighborI++){
-      n = this.circles[vert.neighbors[neighborI]];
-      // ...
-    }
-    
-    // TODO find a radius that minimizes the error for the current vertex
-    // cur.setPropTarget('r', ?, animDuration);
+    avgD = this.mesh.avgDistToNeighbors(i);
+    targetRadii[i] = avgD - avgR;
+  // >>>
   });
+  
+  targetRadii.forEach(function(radius, i){
+    this.circles[i].setPropTarget('r', radius, animDuration);
+  }.bind(this));
 };
 
 module.exports = Packing;

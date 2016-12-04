@@ -81,8 +81,8 @@ Canvas.prototype.noLoop = function(){
   this._isLoop = false;
 };
 
-Canvas.prototype.beforeLoop = function(factoryFn){
-  // this._beforeDraw.push(factoryFn());
+Canvas.prototype.beforeLoop = function(cb){
+  this._beforeDraw.push(cb);
 };
 
 Canvas.prototype.drawCircle = function(x, y, radius){

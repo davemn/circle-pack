@@ -9,6 +9,50 @@ const Mesh = require('./Mesh');
 
 // ---
 
+function solutionAnimationFactory(scene){
+  var errorThreshold = .001;
+  var animDuration = 1; // seconds
+  var animStart = -1;
+  
+  var States = {
+    REFINE: 1,
+    ANIMATE: 2,
+    DONE: 4,
+  };
+  var state = States.REFINE;
+  var scene = scene;
+  
+  return function solutionAnimation(){
+    var curErr;
+    switch(state){
+      case States.REFINE:
+        curErr = scene.packing.getError();
+        console.log('Current error := ' + curErr + ', threshold ' + errorThreshold);
+        if(curErr > errorThreshold){
+          console.log('  Refining solution ...');
+          scene.packing.refineOver(animDuration);
+          // packing.solve(1); // alt., (100, .001)
+          
+          animStart = -1;
+          state = States.ANIMATE;
+        }
+        else
+          state = States.DONE;
+        break;
+      case States.ANIMATE:
+        if(animStart < 0)
+          animStart = Time.time;
+
+        if(Time.time - animStart > animDuration)
+          state = States.REFINE;
+        break;
+      case States.DONE:
+        console.log('Done.');
+        break;
+    }
+  };
+}
+
 $(document).ready(function(evt) {
   var canvas = new Canvas({
     $canvas: $('#canvas-input'),
@@ -16,68 +60,39 @@ $(document).ready(function(evt) {
   });
     
   // ---
-    
-  canvas.beforeLoop(function factory(){
-    var errorThreshold = .001;
-    var animDuration = 1; // seconds
-    var animStart = -1;
-    
-    var States = {
-      REFINE: 1,
-      ANIMATE: 2,
-      DONE: 4,
-    };
-    var state = States.REFINE;
-    
-    return function(){
-      switch(state){
-        case States.REFINE:
-          if(packing.getError() > errorThreshold){
-            packing = packing.refineOver(animDuration);
-            // packing.solve(1); // alt., (100, .001)
-            
-            animStart = -1;
-            state = States.ANIMATE;
-          }
-          else
-            state = States.DONE;
-          break;
-        case States.ANIMATE:
-          if(animStart < 0)
-            animStart = Time.time;
-
-          if(Time.time - animStart > animDuration)
-            state = States.REFINE;
-          break;
-        case States.DONE:
-          break;
-      }
-    };
-  });
   
-  var mesh = new Mesh();
-
+  var scene = {
+    mesh: new Mesh(),
+    packing: null,
+    circles: null
+  };
+  
   // mesh.addVertex(0,0,true);
   // mesh.addVertex(50,0,true);
   // mesh.addVertex(0,50,true);
   // mesh.addVertex(50,50,true);
-  mesh.addVertex(10,0,true);
-  mesh.addVertex(0,50,true);
-  mesh.addVertex(60,60,true);
-  mesh.addVertex(70,10,true);
-  mesh.triangulate();
+  scene.mesh.addVertex(10,0,true);
+  scene.mesh.addVertex(0,50,true);
+  scene.mesh.addVertex(60,60,true);
+  scene.mesh.addVertex(70,10,true);
+  scene.mesh.triangulate();
   
-  console.log(mesh.vertexCount() + ' Vertices');
-  console.log(mesh._vertices);
+  console.log(scene.mesh.vertexCount() + ' Vertices');
+  console.log(scene.mesh._vertices);
   console.log('Faces');
-  console.log(mesh._faces);
+  console.log(scene.mesh._faces);
   console.log('Edges');
-  console.log(mesh._edges);
+  console.log(scene.mesh._edges);
   
-  canvas.add(mesh);  
-
-  var packing = new Packing(mesh);
-  canvas.add(packing.getCircles());
+  canvas.add(scene.mesh);
+  
+  scene.packing = new Packing(scene.mesh);
+  scene.circles = scene.packing.getCircles();
+  canvas.add(scene.circles);
+  
+  // ---
+    
+  canvas.beforeLoop(solutionAnimationFactory(scene));
   
   canvas.loop();
 });
