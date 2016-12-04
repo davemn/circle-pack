@@ -70,14 +70,25 @@ Packing.prototype.refineOver = function(animDuration){
   //    nR.push(n.r);
   //  }
   // ---
+  //  var outer = this;
+  //  var avgR = vert.neighbors.reduce(function(accR, neighborI){
+  //    return accR + outer.circles[neighborI].r;
+  //  },0);
+  //  avgR = avgR / vert.neighbors.length;
+  //  
+  //  avgD = this.mesh.avgDistToNeighbors(i);
+  //  targetRadii[i] = avgD - avgR;
+  // ---
     var outer = this;
-    var avgR = vert.neighbors.reduce(function(accR, neighborI){
-      return accR + outer.circles[neighborI].r;
-    },0);
-    avgR = avgR / vert.neighbors.length;
+    var maxNeighbor = vert.neighbors.reduce(function(max, neighborI){
+      if(outer.circles[neighborI].r > max.r)
+        return {i: neighborI, r: outer.circles[neighborI].r};
+      else
+        return max;
+    }, {i:-1, r:-1});
     
-    avgD = this.mesh.avgDistToNeighbors(i);
-    targetRadii[i] = avgD - avgR;
+    var meshDist = this.mesh.distToNeighbor(i, maxNeighbor.i);
+    targetRadii[i] = meshDist - maxNeighbor.r;
   // >>>
   });
   

@@ -92,6 +92,24 @@ Mesh.prototype.avgDistToNeighbors = function(vertexI){
   return sum / adjacent.length;
 };
 
+Mesh.prototype.distToNeighbor = function(vertexI, neighborVertexI){
+  if(vertexI < 0 || vertexI >= this._vertexCount){
+    console.log('Attempt to access out-of-bounds vertex.');
+    return;
+  }
+  
+  if(this._edges[vertexI].indexOf(neighborVertexI) < 0)
+    return; // neighbor was not in list of adjacent vertices
+  
+  var x = this._vertices[vertexI*2];
+  var y = this._vertices[vertexI*2 + 1];
+  
+  var nX = this._vertices[neighborVertexI*2];
+  var nY = this._vertices[neighborVertexI*2 + 1];
+  
+  return Math.sqrt((nX-x)*(nX-x) + (nY-y)*(nY-y));
+};
+
 // http://stackoverflow.com/a/919661
 // https://en.wikipedia.org/wiki/Pairing_function#Cantor_pairing_function
 function computeId(a, b){
