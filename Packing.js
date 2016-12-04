@@ -70,9 +70,10 @@ Packing.prototype.refineOver = function(animDuration){
   //    nR.push(n.r);
   //  }
   // ---
+    var outer = this;
     var avgR = vert.neighbors.reduce(function(accR, neighborI){
-      accR += this.circles[neighborI].r;
-    }.bind(this),0);
+      return accR + outer.circles[neighborI].r;
+    },0);
     avgR = avgR / vert.neighbors.length;
     
     avgD = this.mesh.avgDistToNeighbors(i);
