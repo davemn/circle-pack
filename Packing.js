@@ -79,22 +79,44 @@ Packing.prototype.refineOver = function(animDuration){
   //  avgD = this.mesh.avgDistToNeighbors(i);
   //  targetRadii[i] = avgD - avgR;
   // ---
-    var outer = this;
-    var maxNeighbor = vert.neighbors.reduce(function(max, neighborI){
-      if(outer.circles[neighborI].r > max.r)
-        return {i: neighborI, r: outer.circles[neighborI].r};
-      else
-        return max;
-    }, {i:-1, r:-1});
-    
-    var meshDist = this.mesh.distToNeighbor(i, maxNeighbor.i);
-    targetRadii[i] = meshDist - maxNeighbor.r;
+  //  var outer = this;
+  //  var maxNeighbor = vert.neighbors.reduce(function(max, neighborI){
+  //    if(outer.circles[neighborI].r > max.r)
+  //      return {i: neighborI, r: outer.circles[neighborI].r};
+  //    else
+  //      return max;
+  //  }, {i:-1, r:-1});
+  //  
+  //  var meshDist = this.mesh.distToNeighbor(i, maxNeighbor.i);
+  //  targetRadii[i] = meshDist - maxNeighbor.r;
+  // ---
+    var cur = this.circles[i]; // current circle
+    // TODO Need to find `r` that minimizes err(r)
+    this._err(vert, i, cur.r);
   // >>>
   });
   
   targetRadii.forEach(function(radius, i){
     this.circles[i].setPropTarget('r', radius, animDuration);
   }.bind(this));
+};
+
+Packing.prototype._err = function(vert, i, curR){
+  var n; // neighboring circle
+  var meshDist; // mesh distance between current vertex and neighbor
+  var residuals = []; // residual := difference between the actual value of the dependent variable and the value predicted by the model
+  
+  for(var neighborI=0; neighborI < vert.neighbors.length; neighborI++){
+    n = this.circles[vert.neighbors[neighborI]];
+    meshDist = this.mesh.distToNeighbor(i, vert.neighbors[neighborI]);
+    // y = meshDist - n.r, or actual space available along edge to neighbor
+    // f(x,b) = curR, or current best fit
+    residuals.push((meshDist - n.r) - curR);
+  }
+  var sumSquareResiduals = residuals.reduce(function(sum, residual){
+    return sum + (residual*residual);
+  }, 0);
+  return sumSquareResiduals;
 };
 
 module.exports = Packing;
