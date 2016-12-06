@@ -92,6 +92,47 @@ Packing.prototype.refineOver = function(animDuration){
   // ---
     var cur = this.circles[i]; // current circle
     // TODO Need to find `r` that minimizes err(r)
+    
+    // Method: Find neighboring circle with largest radius, and smallest.
+    // Use those radii as bounds for a golden section search on _err().
+    // The radius w/ minimum error must exist between those extremes.
+    
+    var outer = this;
+    var extremum = vert.neighbors.reduce(function(extreme, neighborI){
+      if(outer.circles[neighborI].r > extreme.max.r)
+        extreme.max = {i: neighborI, r: outer.circles[neighborI].r};
+      if(outer.circles[neighborI].r < extreme.min.r)
+        extreme.min = {i: neighborI, r: outer.circles[neighborI].r};
+    
+      return extreme;
+    }, {max: {i:-1, r:-1}, min: {i:-1, r:Number.MAX_SAFE_INTEGER}});
+    
+    var minR = this.mesh.distToNeighbor(i, extremum.max.i) - extremum.max.r;
+    var maxR = this.mesh.distToNeighbor(i, extremum.min.i) - extremum.min.r;
+    
+    // golden section search
+    // var x1 = minR, f1 = this._err(vert,i, x1);
+    // var x3 = maxR, f3 = this._err(vert,i, x3);
+    // var x2 = (x3 - x1) * .65 + x1, f2 = this._err(vert,i, x2);
+    // 
+    // var phi = 1.618033988749895; // golden radio, (1 + sqrt(5)) / 2
+    // var x4, f4;
+    // while(x3 - x1 > .01){
+    //   x4 = x1 + (x3 - x2);
+    //   f4 = this._err(vert,i, x4);
+    //   if
+    // }
+    
+    var phi = 1.618033988749895; // golden radio, (1 + sqrt(5)) / 2
+    var a = minR, fa = this._err(vert,i, a);
+    var b = maxR, fb = this._err(vert,i, b);
+    
+    var c = b + (a-b)/phi, fc = this._err(vert,i, c);
+    var d = a + (b-a)/phi, fd = this._err(vert,i, d);
+    
+    
+    // ---
+    
     this._err(vert, i, cur.r);
   // >>>
   });
