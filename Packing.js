@@ -110,38 +110,37 @@ Packing.prototype.refineOver = function(animDuration){
     var minR = this.mesh.distToNeighbor(i, extremum.max.i) - extremum.max.r;
     var maxR = this.mesh.distToNeighbor(i, extremum.min.i) - extremum.min.r;
     
-    // golden section search
-    // var x1 = minR, f1 = this._err(vert,i, x1);
-    // var x3 = maxR, f3 = this._err(vert,i, x3);
-    // var x2 = (x3 - x1) * .65 + x1, f2 = this._err(vert,i, x2);
-    // 
-    // var phi = 1.618033988749895; // golden radio, (1 + sqrt(5)) / 2
-    // var x4, f4;
-    // while(x3 - x1 > .01){
-    //   x4 = x1 + (x3 - x2);
-    //   f4 = this._err(vert,i, x4);
-    //   if
-    // }
+    var targetR;
+    if(cur.r > extremum.max.r){
+      targetR = cur.r;
+    }
+    else {
+      targetR = maxR; // make as big as possible w/o overlap
+    }
     
-    var phi = 1.618033988749895; // golden radio, (1 + sqrt(5)) / 2
-    var a = minR, fa = this._err(vert,i, a);
-    var b = maxR, fb = this._err(vert,i, b);
-    
-    var c = b + (a-b)/phi, fc = this._err(vert,i, c);
-    var d = a + (b-a)/phi, fd = this._err(vert,i, d);
-    
-    
-    // ---
-    
-    this._err(vert, i, cur.r);
+    targetRadii[i] = targetR;
   // >>>
   });
+// ---
+  // var weights = this.circles.reduce(function(radii, circle){
+  //   return radii.push(circle.r);
+  // }, []);
+  // 
+  // if(!this.objectiveFn)
+  //   this.objectiveFn = this._objectiveFactory(this.mesh);
+  // 
+  // while(this.objectiveFn(weights) > .001){
+  //   weights = ?;
+  // }
+  
+  // ...
   
   targetRadii.forEach(function(radius, i){
     this.circles[i].setPropTarget('r', radius, animDuration);
   }.bind(this));
 };
 
+// Sum of squares error at a given vertex, and a given weight (`curR`)
 Packing.prototype._err = function(vert, i, curR){
   var n; // neighboring circle
   var meshDist; // mesh distance between current vertex and neighbor
@@ -158,6 +157,21 @@ Packing.prototype._err = function(vert, i, curR){
     return sum + (residual*residual);
   }, 0);
   return sumSquareResiduals;
+};
+
+Packing.prototype._objectiveFactory = function(mesh){
+  return function(weights){
+    var err = [];
+    mesh.forEachVertex(this, function(vert, i){
+      err.push(this._err(vert, i, weights[i]));
+    });  
+    
+    var errSum = err.reduce(function(sum, e){
+      return sum + e;
+    }, 0);
+    
+    return errSum;
+  }.bind(this);
 };
 
 module.exports = Packing;
