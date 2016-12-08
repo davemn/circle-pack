@@ -14,38 +14,49 @@ function Packing(mesh){
   });
 }
 
-// mean square error at vertex i
-Packing.prototype.getErrorAt = function(i){
+// sum of squared residuals at vertex i, given a circle radius at i of `weight`
+Packing.prototype.getErrorAt = function(i, weight){
   var vert = this.mesh.getVertexAt(i);
   
-  var cur = this.circles[i];
   var n;
   var meshDist, radiusDist;
-  var err = [];
+  var residuals = [];
   
   for(var neighborI=0; neighborI < vert.neighbors.length; neighborI++){
     n = this.circles[vert.neighbors[neighborI]];
 
-    meshDist = Math.sqrt((n.x-cur.x)*(n.x-cur.x) + (n.y-cur.y)*(n.y-cur.y))
-    radiusDist = cur.r + n.r;
-    err.push(meshDist - radiusDist);
+    meshDist = this.mesh.distToNeighbor(i, vert.neighbors[neighborI]);
+    residuals.push((meshDist - n.r) - weight);
   }
-  var mse = err.reduce(function(mse, e){ // mean squared error of the current radius against its neighbors
-    return mse + (e*e);
+  var ssr = residuals.reduce(function(ssr, e){ // sum of squared residuals
+    return ssr + (e*e);
   },0);
   
-  return mse / err.length;
+  // squared error of the current radius against its neighbors
+  return { ssr: ssr, count: residuals.length };
 };
 
-// sum of the mean square error at each vertex
-Packing.prototype.getError = function(){
-  var totalMse = 0;
-  
-  for(var i=0; i < this.mesh.vertexCount(); i++){
-    totalMse += this.getErrorAt(i);
+// mean squared error across all vertices
+Packing.prototype.getError = function(weights){
+  if(!weights){
+    weights = this.circles.reduce(function(radii, circle){
+      radii.push(circle.r);
+      return radii;
+    }, []);
   }
   
-  return totalMse;
+  var totalSSR = 0;
+  var err;
+  var observationCount = 0;
+  
+  for(var i=0; i < this.mesh.vertexCount(); i++){
+    // totalMse += this.getErrorAt(i);
+    err = this.getErrorAt(i, weights[i]);
+    totalSSR += err.ssr;
+    observationCount += err.count;
+  }
+  
+  return totalSSR / observationCount;
 };
 
 Packing.prototype.getCircles = function(){
@@ -62,14 +73,12 @@ Packing.prototype.refineOver = function(animDuration){
     return radii;
   }, []);
   
-  if(!this.objectiveFn)
-    this.objectiveFn = this._objectiveFactory(this.mesh);
   // 
   // while(this.objectiveFn(weights) > .001){
   //   weights = ?;
   // }
   
-  targetRadii = numeric.uncmin(this.objectiveFn, weights).solution;
+  targetRadii = numeric.uncmin(this.getError.bind(this), weights).solution;
   
   // ...
   
@@ -95,21 +104,6 @@ Packing.prototype._err = function(vert, i, curR){
     return sum + (residual*residual);
   }, 0);
   return sumSquareResiduals;
-};
-
-Packing.prototype._objectiveFactory = function(mesh){
-  return function(weights){
-    var err = [];
-    mesh.forEachVertex(this, function(vert, i){
-      err.push(this._err(vert, i, weights[i]));
-    });  
-    
-    var errSum = err.reduce(function(sum, e){
-      return sum + e;
-    }, 0);
-    
-    return errSum;
-  }.bind(this);
 };
 
 module.exports = Packing;
