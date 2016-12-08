@@ -1,3 +1,4 @@
+const numeric = require('numeric');
 const Circle = require('./Circle');
 
 function Packing(mesh){  
@@ -56,82 +57,19 @@ Packing.prototype.refineOver = function(animDuration){
   // find a radius, newRadius := avg(distToNeighbor) - avg(radiusOfNeighbor)
   var targetRadii = Array(this.mesh.vertexCount()).fill(0);
   
-  this.mesh.forEachVertex(this, function(vert, i){
-  // <<<
-  //  var cur = this.circles[i];
-  //  var n;
-  //  var nR = [];
-  //  
-  //  for(var neighborI=0; neighborI < vert.neighbors.length; neighborI++){
-  //    n = this.circles[vert.neighbors[neighborI]];
-  //    // ...
-  //    // radiusDist = cur.r + n.r;
-  //    // err.push(meshDist - radiusDist);
-  //    nR.push(n.r);
-  //  }
-  // ---
-  //  var outer = this;
-  //  var avgR = vert.neighbors.reduce(function(accR, neighborI){
-  //    return accR + outer.circles[neighborI].r;
-  //  },0);
-  //  avgR = avgR / vert.neighbors.length;
-  //  
-  //  avgD = this.mesh.avgDistToNeighbors(i);
-  //  targetRadii[i] = avgD - avgR;
-  // ---
-  //  var outer = this;
-  //  var maxNeighbor = vert.neighbors.reduce(function(max, neighborI){
-  //    if(outer.circles[neighborI].r > max.r)
-  //      return {i: neighborI, r: outer.circles[neighborI].r};
-  //    else
-  //      return max;
-  //  }, {i:-1, r:-1});
-  //  
-  //  var meshDist = this.mesh.distToNeighbor(i, maxNeighbor.i);
-  //  targetRadii[i] = meshDist - maxNeighbor.r;
-  // ---
-    var cur = this.circles[i]; // current circle
-    // TODO Need to find `r` that minimizes err(r)
-    
-    // Method: Find neighboring circle with largest radius, and smallest.
-    // Use those radii as bounds for a golden section search on _err().
-    // The radius w/ minimum error must exist between those extremes.
-    
-    var outer = this;
-    var extremum = vert.neighbors.reduce(function(extreme, neighborI){
-      if(outer.circles[neighborI].r > extreme.max.r)
-        extreme.max = {i: neighborI, r: outer.circles[neighborI].r};
-      if(outer.circles[neighborI].r < extreme.min.r)
-        extreme.min = {i: neighborI, r: outer.circles[neighborI].r};
-    
-      return extreme;
-    }, {max: {i:-1, r:-1}, min: {i:-1, r:Number.MAX_SAFE_INTEGER}});
-    
-    var minR = this.mesh.distToNeighbor(i, extremum.max.i) - extremum.max.r;
-    var maxR = this.mesh.distToNeighbor(i, extremum.min.i) - extremum.min.r;
-    
-    var targetR;
-    if(cur.r > extremum.max.r){
-      targetR = cur.r;
-    }
-    else {
-      targetR = maxR; // make as big as possible w/o overlap
-    }
-    
-    targetRadii[i] = targetR;
-  // >>>
-  });
-// ---
-  // var weights = this.circles.reduce(function(radii, circle){
-  //   return radii.push(circle.r);
-  // }, []);
-  // 
-  // if(!this.objectiveFn)
-  //   this.objectiveFn = this._objectiveFactory(this.mesh);
+  var weights = this.circles.reduce(function(radii, circle){
+    radii.push(circle.r);
+    return radii;
+  }, []);
+  
+  if(!this.objectiveFn)
+    this.objectiveFn = this._objectiveFactory(this.mesh);
   // 
   // while(this.objectiveFn(weights) > .001){
   //   weights = ?;
   // }
+  
+  targetRadii = numeric.uncmin(this.objectiveFn, weights).solution;
   
   // ...
   

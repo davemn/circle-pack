@@ -19,6 +19,7 @@
     "karma-firefox-launcher": "^1.0.0",
     "karma-jasmine": "^1.0.2",
     "lodash": "^4.17.2",
+    "numeric": "^1.2.6",
     "watchify": "^3.7.0"
   }
 }
