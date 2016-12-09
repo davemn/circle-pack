@@ -67,14 +67,48 @@ $(document).ready(function(evt) {
     circles: null
   };
   
-  // mesh.addVertex(0,0,true);
-  // mesh.addVertex(50,0,true);
-  // mesh.addVertex(0,50,true);
-  // mesh.addVertex(50,50,true);
-  scene.mesh.addVertex(10,0,true);
-  scene.mesh.addVertex(0,50,true);
-  scene.mesh.addVertex(60,60,true);
-  scene.mesh.addVertex(70,10,true);
+  // <<<
+  // // mesh.addVertex(0,0,true);
+  // // mesh.addVertex(50,0,true);
+  // // mesh.addVertex(0,50,true);
+  // // mesh.addVertex(50,50,true);
+  // scene.mesh.addVertex(10,0,true);
+  // scene.mesh.addVertex(0,50,true);
+  // scene.mesh.addVertex(60,60,true);
+  // scene.mesh.addVertex(70,10,true);
+  // ---
+  // Ported from Matlab:
+  // https://www.mathworks.com/matlabcentral/answers/158357-create-random-points-in-a-rectangular-domain-but-with-minimum-separation-distance#answer_154888
+  var x = Array.apply(null, {length: 1e4}).map(function(){ return Math.random(); });
+  var y = Array.apply(null, {length: 1e4}).map(function(){ return Math.random(); });
+  
+  var minAllowableDistance = 0.05;
+  var numberOfPoints = 300;
+  // Initialize first point.
+  var keeper = [{x: x[0], y: y[0]}];
+  // Try dropping down more points.
+  for (var k=2; k <= numberOfPoints; k++){
+    // Get a trial point.
+    var thisX = x[k-1];
+    var thisY = y[k-1];
+    // See how far this is away from existing keeper points.
+    var distances = keeper.reduce(function(distances, keeperP){
+      distances.push(Math.sqrt((thisX-keeperP.x)*(thisX-keeperP.x) + (thisY-keeperP.y)*(thisY-keeperP.y)));
+      return distances;
+    }, []);
+    var minDistance = Math.min.apply(null, distances);
+    if (minDistance >= minAllowableDistance){
+      keeper.push({x: thisX, y: thisY});
+    }
+  }
+  
+  console.log(keeper.length+' point(s) generated.');
+  
+  keeper.map(function(p){
+    scene.mesh.addVertex(p.x * canvas.canvas.width, p.y * canvas.canvas.height,true);
+  });
+  
+  // >>>
   scene.mesh.triangulate();
   
   console.log(scene.mesh.vertexCount() + ' Vertices');
@@ -86,13 +120,13 @@ $(document).ready(function(evt) {
   
   canvas.add(scene.mesh);
   
-  scene.packing = new Packing(scene.mesh);
-  scene.circles = scene.packing.getCircles();
-  canvas.add(scene.circles);
-  
-  // ---
-    
-  canvas.beforeLoop(solutionAnimationFactory(scene));
+  // scene.packing = new Packing(scene.mesh);
+  // scene.circles = scene.packing.getCircles();
+  // canvas.add(scene.circles);
+  // 
+  // // ---
+  //   
+  // canvas.beforeLoop(solutionAnimationFactory(scene));
   
   canvas.loop();
 });

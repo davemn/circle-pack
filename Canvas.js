@@ -85,48 +85,4 @@ Canvas.prototype.beforeLoop = function(cb){
   this._beforeDraw.push(cb);
 };
 
-Canvas.prototype.drawCircle = function(x, y, radius){
-  this.ctx.beginPath();
-  this.ctx.arc(x, y, radius, 0,2*Math.PI);
-  this.ctx.stroke();
-  this.ctx.fill();
-};
-
-Canvas.prototype.drawGraph = function(){
-  this.ctx.save();
-  this.ctx.lineWidth = 1;
-  
-  this.ctx.fillStyle = 'white';
-  this.ctx.fillRect(0,0, this.canvas.width,this.canvas.height);
-  
-  var tri = [
-      Math.random() * this.canvas.width, Math.random() * this.canvas.height,
-      Math.random() * this.canvas.width, Math.random() * this.canvas.height,
-      Math.random() * this.canvas.width, Math.random() * this.canvas.height
-  ];
-  
-  // Draw edges
-  this.ctx.strokeStyle = 'black';
-  this.ctx.beginPath();
-  this.ctx.moveTo(tri[0], tri[1]);
-  this.ctx.lineTo(tri[2], tri[3]);
-  this.ctx.lineTo(tri[4], tri[5]);
-  this.ctx.closePath();
-  this.ctx.stroke();
-  
-  // Draw vertices
-  this.ctx.lineWidth = 2;
-  this.ctx.strokeStyle = 'red';
-  this.ctx.fillStyle = 'white';
-  
-  for(var vertI=0; vertI < 3; vertI++){
-    this.ctx.beginPath();
-    this.ctx.arc(tri[vertI*2], tri[vertI*2 + 1], 4, 0,2*Math.PI);
-    this.ctx.stroke();
-    this.ctx.fill();
-  }
-  
-  this.ctx.restore();
-};
-
 module.exports = Canvas;
