@@ -6,6 +6,7 @@ const Time = require('./Time');
 const Canvas = require('./Canvas');
 const Packing = require('./Packing');
 const Mesh = require('./Mesh');
+const Circle = require('./Circle');
 
 // ---
 
@@ -67,7 +68,7 @@ $(document).ready(function(evt) {
     circles: null
   };
   
-  // <<<
+// <<<
   // // mesh.addVertex(0,0,true);
   // // mesh.addVertex(50,0,true);
   // // mesh.addVertex(0,50,true);
@@ -76,14 +77,14 @@ $(document).ready(function(evt) {
   // scene.mesh.addVertex(0,50,true);
   // scene.mesh.addVertex(60,60,true);
   // scene.mesh.addVertex(70,10,true);
-  // ---
+// ---
   // Ported from Matlab:
   // https://www.mathworks.com/matlabcentral/answers/158357-create-random-points-in-a-rectangular-domain-but-with-minimum-separation-distance#answer_154888
   var x = Array.apply(null, {length: 1e4}).map(function(){ return Math.random(); });
   var y = Array.apply(null, {length: 1e4}).map(function(){ return Math.random(); });
   
   var minAllowableDistance = 0.05;
-  var numberOfPoints = 300;
+  var numberOfPoints = 20;
   // Initialize first point.
   var keeper = [{x: x[0], y: y[0]}];
   // Try dropping down more points.
@@ -107,8 +108,8 @@ $(document).ready(function(evt) {
   keeper.map(function(p){
     scene.mesh.addVertex(p.x * canvas.canvas.width, p.y * canvas.canvas.height,true);
   });
+// >>>
   
-  // >>>
   scene.mesh.triangulate();
   
   console.log(scene.mesh.vertexCount() + ' Vertices');
@@ -118,6 +119,7 @@ $(document).ready(function(evt) {
   console.log('Edges');
   console.log(scene.mesh._edges);
   
+// <<<
   canvas.add(scene.mesh);
   
   // scene.packing = new Packing(scene.mesh);
@@ -127,6 +129,12 @@ $(document).ready(function(evt) {
   // // ---
   //   
   // canvas.beforeLoop(solutionAnimationFactory(scene));
+// ---
+  // scene.mesh.forEachVertex(this, function(vert, i){
+  //   var c = new Circle(vert.x, vert.y, 16);
+  //   canvas.add(c);
+  // });
+// >>>
   
   canvas.loop();
 });
