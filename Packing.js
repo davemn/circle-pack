@@ -87,23 +87,4 @@ Packing.prototype.refineOver = function(animDuration){
   }.bind(this));
 };
 
-// Sum of squares error at a given vertex, and a given weight (`curR`)
-Packing.prototype._err = function(vert, i, curR){
-  var n; // neighboring circle
-  var meshDist; // mesh distance between current vertex and neighbor
-  var residuals = []; // residual := difference between the actual value of the dependent variable and the value predicted by the model
-  
-  for(var neighborI=0; neighborI < vert.neighbors.length; neighborI++){
-    n = this.circles[vert.neighbors[neighborI]];
-    meshDist = this.mesh.distToNeighbor(i, vert.neighbors[neighborI]);
-    // y = meshDist - n.r, or actual space available along edge to neighbor
-    // f(x,b) = curR, or current best fit
-    residuals.push((meshDist - n.r) - curR);
-  }
-  var sumSquareResiduals = residuals.reduce(function(sum, residual){
-    return sum + (residual*residual);
-  }, 0);
-  return sumSquareResiduals;
-};
-
 module.exports = Packing;
