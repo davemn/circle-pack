@@ -7,8 +7,7 @@ m.addVertex(70,10);
 m.triangulate();
 */
 
-const earcut = require('earcut'); // https://github.com/mapbox/earcut
-const _ = require('lodash');
+const Delaunay = require('delaunay-fast');
 
 function Mesh(){
   this._vertices = []; // flat arra, every 2 elems represents a vertex position
@@ -36,25 +35,21 @@ Mesh.prototype.triangulate = function(){
   if(!this._needsTriangulation)
     return;
   
-  // Sort vertices by x, then y
+// <<<
+  // this._faces = earcut(this._vertices);
+// ---  
+  // Convert flat array of vertices into count(V)x2 2D array
   var vChunked = [];
   for (var chunkI=0; chunkI < this._vertices.length; chunkI+=2) {
     vChunked.push(this._vertices.slice(chunkI,chunkI+2));
   }
-  vChunked.sort(function(a, b){
-    if(a[0] < b[0])
-      return -1;
-    if(a[0] > b[0])
-      return 1;
-    return a[1] - b[1];
-  });
-  this._vertices = vChunked.reduce(function(a, b){
+  this._faces = Delaunay.triangulate(vChunked);
+  
+  // Flatten the resulting count(F)x3 2D array
+  this._faces = this._faces.reduce(function(a, b){
     return a.concat(b);
   }, []);
-  
-  // ---
-  
-  this._faces = earcut(this._vertices);
+// >>>
   
   // Can't just use `Array(n).fill([])` or `Array(n).map(e => [])`, see:
   // http://stackoverflow.com/a/20333755

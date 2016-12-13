@@ -10,7 +10,7 @@
   "license": "MIT",
   "devDependencies": {
     "browserify": "~13.1.0",
-    "earcut": "^2.1.1",
+    "delaunay-fast": "^1.0.1",
     "global": "~4.3.1",
     "jasmine": "^2.5.2",
     "jasmine-core": "^2.5.2",
@@ -18,7 +18,6 @@
     "karma-browserify": "^5.1.0",
     "karma-firefox-launcher": "^1.0.0",
     "karma-jasmine": "^1.0.2",
-    "lodash": "^4.17.2",
     "numeric": "^1.2.6",
     "watchify": "^3.7.0"
   }
