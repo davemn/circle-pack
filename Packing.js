@@ -68,19 +68,21 @@ Packing.prototype.refineOver = function(animDuration){
   // find a radius, newRadius := avg(distToNeighbor) - avg(radiusOfNeighbor)
   var targetRadii = Array(this.mesh.vertexCount()).fill(0);
   
-  var weights = this.circles.reduce(function(radii, circle){
-    radii.push(circle.r);
-    return radii;
-  }, []);
-  
+  // <<<
+  // var weights = this.circles.reduce(function(radii, circle){
+  //   radii.push(circle.r);
+  //   return radii;
+  // }, []);
   // 
-  // while(this.objectiveFn(weights) > .001){
-  //   weights = ?;
-  // }
+  // targetRadii = numeric.uncmin(this.getError.bind(this), weights).solution;
+  // ---
+  var A = this.mesh.adjacencyMatrix()
+  // negative to maximize objective fn (instead of Numeric JS' minimize)
+  var c = Array(this.mesh.vertexCount()).fill(-1);
+  var b = ?;
   
-  targetRadii = numeric.uncmin(this.getError.bind(this), weights).solution;
-  
-  // ...
+  targetRadii = numeric.solveLP(c,A,b).solution;
+  // >>>
   
   targetRadii.forEach(function(radius, i){
     this.circles[i].setPropTarget('r', radius, animDuration);

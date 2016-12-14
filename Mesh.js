@@ -181,4 +181,26 @@ Mesh.prototype.forEachVertex = function(ctx, cb){
   }
 };
 
+Mesh.prototype.adjacencyMatrix = function(){
+  var row;
+  var adjacentI, adjacent;
+  
+  var mat = this._edges.reduce(function(mat, adjacencies){
+    row = Array(this._vertexCount).fill(0);
+    
+    for(adjacentI = 0; adjacentI < adjacencies.length; adjacentI++){
+      adjacent = adjacencies[adjacentI];
+      row[adjacent] = 1;
+    }
+    mat.push(row);
+    return mat;
+  }, []);
+  
+  // convert to upper-triangular to improve LP sol'n speed
+  for(var i=1; i <= mat.length; i++){
+    mat[i].fill(0, 0, i);
+  }
+  return mat;
+};
+
 module.exports = Mesh;

@@ -122,13 +122,13 @@ $(document).ready(function(evt) {
 // <<<
   canvas.add(scene.mesh);
   
-  // scene.packing = new Packing(scene.mesh);
-  // scene.circles = scene.packing.getCircles();
-  // canvas.add(scene.circles);
-  // 
-  // // ---
-  //   
-  // canvas.beforeLoop(solutionAnimationFactory(scene));
+  scene.packing = new Packing(scene.mesh);
+  scene.circles = scene.packing.getCircles();
+  canvas.add(scene.circles);
+  
+  // ---
+    
+  canvas.beforeLoop(solutionAnimationFactory(scene));
 // ---
   // scene.mesh.forEachVertex(this, function(vert, i){
   //   var c = new Circle(vert.x, vert.y, 16);
