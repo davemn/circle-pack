@@ -196,10 +196,6 @@ Mesh.prototype.adjacencyMatrix = function(){
     return mat;
   }, []);
   
-  // convert to upper-triangular to improve LP sol'n speed
-  for(var i=1; i <= mat.length; i++){
-    mat[i].fill(0, 0, i);
-  }
   return mat;
 };
 

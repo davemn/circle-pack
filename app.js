@@ -27,18 +27,23 @@ function solutionAnimationFactory(scene){
     var curErr;
     switch(state){
       case States.REFINE:
-        curErr = scene.packing.getError();
-        console.log('Current error := ' + curErr + ', threshold ' + errorThreshold);
-        if(curErr > errorThreshold){
-          console.log('  Refining solution ...');
-          scene.packing.refineOver(animDuration);
-          // packing.solve(1); // alt., (100, .001)
-          
-          animStart = -1;
-          state = States.ANIMATE;
-        }
-        else
-          state = States.DONE;
+      // <<<
+      //  curErr = scene.packing.getError();
+      //  console.log('Current error := ' + curErr + ', threshold ' + errorThreshold);
+      //  if(curErr > errorThreshold){
+      //    console.log('  Refining solution ...');
+      //    scene.packing.refineOver(animDuration);
+      //    // packing.solve(1); // alt., (100, .001)
+      //    
+      //    animStart = -1;
+      //    state = States.ANIMATE;
+      //  }
+      //  else
+      //    state = States.DONE;
+      // ---
+        scene.packing.refineOver(animDuration);
+        state = States.DONE;
+      // >>>
         break;
       case States.ANIMATE:
         if(animStart < 0)

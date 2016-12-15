@@ -76,12 +76,46 @@ Packing.prototype.refineOver = function(animDuration){
   // 
   // targetRadii = numeric.uncmin(this.getError.bind(this), weights).solution;
   // ---
-  var A = this.mesh.adjacencyMatrix()
+  var A = this.mesh.adjacencyMatrix();
+  
+  // convert to upper-triangular to improve LP sol'n speed
+  for(var i=0; i < A.length; i++){
+    A[i].fill(0, 0, i+1);
+  }
+  
+  // Split rows, (1) [0 1 1 0] => [1 1 0 0][1 0 1 0],
+  // i.e. separate into two-variable inequalities.
+  A = A.reduce(function(coeff, row, i){
+    var newRow;
+    
+    for(var colI=0; colI < row.length; colI++){
+      if(row[colI] === 0)
+        continue;
+      
+      newRow = Array(row.length).fill(0);
+      newRow[i] = 1;
+      newRow[colI] = 1;
+      coeff.push(newRow);
+    }
+    
+    return coeff;
+  }, []);
+  
   // negative to maximize objective fn (instead of Numeric JS' minimize)
   var c = Array(this.mesh.vertexCount()).fill(-1);
-  var b = ?;
+
+  // vector of mesh distances, each entry is right half of an inequality.
+  var b = A.map(function(row){
+    var vI = row.indexOf(1); // first 1 in the row indicates the current vertex
+    var nI = row.indexOf(1, vI+1); // last 1 in the row indicates its neighbor
+    return this.mesh.distToNeighbor(vI, nI);
+  }.bind(this));
   
-  targetRadii = numeric.solveLP(c,A,b).solution;
+  var lp = numeric.solveLP(c,A,b);
+  console.log('Linear programming result := ');
+  console.log(lp);
+  
+  targetRadii = lp.solution;
   // >>>
   
   targetRadii.forEach(function(radius, i){
