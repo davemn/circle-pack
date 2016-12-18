@@ -89,7 +89,7 @@ $(document).ready(function(evt) {
   var y = Array.apply(null, {length: 1e4}).map(function(){ return Math.random(); });
   
   var minAllowableDistance = 0.05;
-  var numberOfPoints = 50;
+  var numberOfPoints = 8;
   // Initialize first point.
   var keeper = [{x: x[0], y: y[0]}];
   // Try dropping down more points.

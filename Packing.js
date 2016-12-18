@@ -1,4 +1,5 @@
 const numeric = require('numeric');
+const Matrix = require('./Matrix');
 const Circle = require('./Circle');
 
 function Packing(mesh){  
@@ -78,6 +79,9 @@ Packing.prototype.refineOver = function(animDuration){
   // ---
   var A = this.mesh.adjacencyMatrix();
   
+  console.log('A (adjacency)');
+  new Matrix(A).format();
+  
   // convert to upper-triangular to improve LP sol'n speed
   for(var i=0; i < A.length; i++){
     A[i].fill(0, 0, i+1);
@@ -96,10 +100,14 @@ Packing.prototype.refineOver = function(animDuration){
       newRow[i] = 1;
       newRow[colI] = 1;
       coeff.push(newRow);
+      
+      if(!this.mesh.isAdjacent(i, colI)){
+        console.log('(A) Vertices ('+i+', '+colI+') are not adjacent!');
+      }
     }
     
     return coeff;
-  }, []);
+  }.bind(this), []);
   
   // negative to maximize objective fn (instead of Numeric JS' minimize)
   var c = Array(this.mesh.vertexCount()).fill(-1);
@@ -108,8 +116,23 @@ Packing.prototype.refineOver = function(animDuration){
   var b = A.map(function(row){
     var vI = row.indexOf(1); // first 1 in the row indicates the current vertex
     var nI = row.indexOf(1, vI+1); // last 1 in the row indicates its neighbor
-    return this.mesh.distToNeighbor(vI, nI);
+    var dist = this.mesh.distToNeighbor(vI, nI);
+    
+    if(!this.mesh.isAdjacent(vI, nI)){
+      console.log('(b) Vertices ('+vI+', '+nI+') are not adjacent!');
+    }
+    
+    return dist;
   }.bind(this));
+  
+  console.log('A');
+  new Matrix(A).format();
+  
+  console.log('b');
+  new Matrix(b).format();
+  
+  console.log('c');
+  new Matrix(c).format();
   
   var lp = numeric.solveLP(c,A,b);
   console.log('Linear programming result := ');

@@ -61,7 +61,7 @@ Mesh.prototype.triangulate = function(){
     for(var vI=0; vI < 3; vI++){
       a = this._faces[i+vI];
       b = this._faces[i+((vI+1)%3)];
-      console.log('  '+a+' ('+(typeof a)+') <-> '+b+ ' ('+(typeof b)+')');
+      // console.log('  '+a+' ('+(typeof a)+') <-> '+b+ ' ('+(typeof b)+')');
       this._edges[a].push(b);
       this._edges[b].push(a);
       // debugger;
@@ -194,9 +194,18 @@ Mesh.prototype.adjacencyMatrix = function(){
     }
     mat.push(row);
     return mat;
-  }, []);
+  }.bind(this), []);
   
   return mat;
+};
+
+Mesh.prototype.isAdjacent = function(vertexI, neighborVertexI){
+  if(vertexI < 0 || vertexI >= this._vertexCount){
+    console.log('Attempt to access out-of-bounds vertex.');
+    return;
+  }
+  
+  return (this._edges[vertexI].indexOf(neighborVertexI) >= 0);
 };
 
 module.exports = Mesh;
