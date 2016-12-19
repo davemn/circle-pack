@@ -1,5 +1,5 @@
 const numeric = require('numeric');
-const Matrix = require('./Matrix');
+const ArrayUtil = require('./ArrayUtil');
 const Circle = require('./Circle');
 
 function Packing(mesh){  
@@ -80,7 +80,7 @@ Packing.prototype.refineOver = function(animDuration){
   var A = this.mesh.adjacencyMatrix();
   
   console.log('A (adjacency)');
-  new Matrix(A).format();
+  ArrayUtil.format(A);
   
   // convert to upper-triangular to improve LP sol'n speed
   for(var i=0; i < A.length; i++){
@@ -126,13 +126,13 @@ Packing.prototype.refineOver = function(animDuration){
   }.bind(this));
   
   console.log('A');
-  new Matrix(A).format();
+  ArrayUtil.format(A);
   
   console.log('b');
-  new Matrix(b).format();
+  ArrayUtil.format(b);
   
   console.log('c');
-  new Matrix(c).format();
+  ArrayUtil.format(c);
   
   var lp = numeric.solveLP(c,A,b);
   console.log('Linear programming result := ');
