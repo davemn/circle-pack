@@ -74,45 +74,51 @@ $(document).ready(function(evt) {
   };
   
 // <<<
-  // // mesh.addVertex(0,0,true);
-  // // mesh.addVertex(50,0,true);
-  // // mesh.addVertex(0,50,true);
-  // // mesh.addVertex(50,50,true);
-  // scene.mesh.addVertex(10,0,true);
-  // scene.mesh.addVertex(0,50,true);
-  // scene.mesh.addVertex(60,60,true);
-  // scene.mesh.addVertex(70,10,true);
+  scene.mesh.addVertex(59.42, 292.05,true);
+  scene.mesh.addVertex(62.12, 172.34,true);
+  scene.mesh.addVertex(34.04, 316.94,true);
+  scene.mesh.addVertex(282.96, 166.96,true);
+  
+  var faces = [0, 2, 3, 1, 0, 3, 2, 0, 1];
+  var edges = [
+    [2, 3, 1],
+    [0, 3, 2],
+    [0, 3, 1],
+    [2, 0, 1],
+  ];
+  
+  scene.mesh.setTriangulation(edges, faces);
 // ---
-  // Ported from Matlab:
-  // https://www.mathworks.com/matlabcentral/answers/158357-create-random-points-in-a-rectangular-domain-but-with-minimum-separation-distance#answer_154888
-  var x = Array.apply(null, {length: 1e4}).map(function(){ return Math.random(); });
-  var y = Array.apply(null, {length: 1e4}).map(function(){ return Math.random(); });
-  
-  var minAllowableDistance = 0.05;
-  var numberOfPoints = 8;
-  // Initialize first point.
-  var keeper = [{x: x[0], y: y[0]}];
-  // Try dropping down more points.
-  for (var k=2; k <= numberOfPoints; k++){
-    // Get a trial point.
-    var thisX = x[k-1];
-    var thisY = y[k-1];
-    // See how far this is away from existing keeper points.
-    var distances = keeper.reduce(function(distances, keeperP){
-      distances.push(Math.sqrt((thisX-keeperP.x)*(thisX-keeperP.x) + (thisY-keeperP.y)*(thisY-keeperP.y)));
-      return distances;
-    }, []);
-    var minDistance = Math.min.apply(null, distances);
-    if (minDistance >= minAllowableDistance){
-      keeper.push({x: thisX, y: thisY});
-    }
-  }
-  
-  console.log(keeper.length+' point(s) generated.');
-  
-  keeper.map(function(p){
-    scene.mesh.addVertex(p.x * canvas.canvas.width, p.y * canvas.canvas.height,true);
-  });
+  // // Ported from Matlab:
+  // // https://www.mathworks.com/matlabcentral/answers/158357-create-random-points-in-a-rectangular-domain-but-with-minimum-separation-distance#answer_154888
+  // var x = Array.apply(null, {length: 1e4}).map(function(){ return Math.random(); });
+  // var y = Array.apply(null, {length: 1e4}).map(function(){ return Math.random(); });
+  // 
+  // var minAllowableDistance = 0.05;
+  // var numberOfPoints = 4;
+  // // Initialize first point.
+  // var keeper = [{x: x[0], y: y[0]}];
+  // // Try dropping down more points.
+  // for (var k=2; k <= numberOfPoints; k++){
+  //   // Get a trial point.
+  //   var thisX = x[k-1];
+  //   var thisY = y[k-1];
+  //   // See how far this is away from existing keeper points.
+  //   var distances = keeper.reduce(function(distances, keeperP){
+  //     distances.push(Math.sqrt((thisX-keeperP.x)*(thisX-keeperP.x) + (thisY-keeperP.y)*(thisY-keeperP.y)));
+  //     return distances;
+  //   }, []);
+  //   var minDistance = Math.min.apply(null, distances);
+  //   if (minDistance >= minAllowableDistance){
+  //     keeper.push({x: thisX, y: thisY});
+  //   }
+  // }
+  // 
+  // console.log(keeper.length+' point(s) generated.');
+  // 
+  // keeper.map(function(p){
+  //   scene.mesh.addVertex(p.x * canvas.canvas.width, p.y * canvas.canvas.height,true);
+  // });
 // >>>
   
   scene.mesh.triangulate();
@@ -124,21 +130,38 @@ $(document).ready(function(evt) {
   console.log('Edges');
   console.log(scene.mesh._edges);
   
-// <<<
   canvas.add(scene.mesh);
   
-  scene.packing = new Packing(scene.mesh);
-  scene.circles = scene.packing.getCircles();
-  canvas.add(scene.circles);
-  
-  // ---
-    
-  canvas.beforeLoop(solutionAnimationFactory(scene));
+// <<<
+  // scene.packing = new Packing(scene.mesh);
+  // scene.circles = scene.packing.getCircles();
+  // canvas.add(scene.circles);
+  // 
+  // // ---
+  //   
+  // canvas.beforeLoop(solutionAnimationFactory(scene));
 // ---
-  // scene.mesh.forEachVertex(this, function(vert, i){
-  //   var c = new Circle(vert.x, vert.y, 16);
-  //   canvas.add(c);
-  // });
+  // Minimize p = -a - b - c - d subject to
+  // a + b <= 119.74
+  // a + c <= 35.56
+  // a + d <= 256.16
+  // b + c <= 147.31
+  // b + d <= 220.9
+  // c + d <= 290.62
+
+  // numericjs     Zweig simplex (http://www.zweigmedia.com/RealWorld/simplex.html)
+  // 13.82     vs. 3.995
+  // 105.86    vs. 115.745
+  // 21.73     vs. 31.565
+  // 115.04    vs. 105.155
+  
+  // var radii = [13.82, 105.86, 21.73, 115.04]; // obj fn := 256.45
+  var radii = [3.995, 115.745, 31.565, 105.155]; // obj fn := 256.46
+
+  scene.mesh.forEachVertex(this, function(vert, i){
+    var c = new Circle(vert.x, vert.y, radii[i]);
+    canvas.add(c);
+  });
 // >>>
   
   canvas.loop();

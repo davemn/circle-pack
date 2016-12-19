@@ -27,6 +27,12 @@ Mesh.prototype.addVertex = function(x,y, noTriangulate){
     this.triangulate();
 };
 
+Mesh.prototype.setTriangulation = function(edges, faces){
+  this._edges = edges;
+  this._faces = faces;
+  this._needsTriangulation = false;
+};
+
 Mesh.prototype.vertexCount = function(){
   return this._vertexCount;
 };
